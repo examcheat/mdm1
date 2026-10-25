@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Practicals.ipynb</title>
+<style>
+:root{--bg:#131314;--panel:#1e1f20;--cell:#28292c;--line:#444746;--tx:#e3e3e3;--mut:#9aa0a6;--blue:#a8c7fa;--btn:#0b57d0;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font-family:Roboto,Arial,sans-serif}
+body{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+header{display:flex;align-items:center;gap:14px;padding:10px 16px;border-bottom:1px solid #2b2c2e;flex-wrap:wrap}
+.logo{font-weight:900;font-size:22px;color:#f9ab00;letter-spacing:-2px}
+.ttl{font-size:18px}.menu{display:flex;gap:16px;font-size:14px;color:var(--tx);margin-top:2px;flex-wrap:wrap}
+.sp{flex:1}.share{background:#a8c7fa;color:#062e6f;border-radius:20px;padding:8px 18px;font-size:14px;font-weight:500}
+.tb{display:flex;gap:18px;padding:8px 16px;font-size:14px;align-items:center;overflow-x:auto;white-space:nowrap;background:var(--panel);margin:8px 12px;border-radius:14px}
+.tb span{color:var(--tx)}.tb .m{color:var(--mut)}
+.wrap{display:flex;gap:12px;padding:0 12px 60px}
+aside{width:52px;background:var(--panel);border-radius:26px;padding:14px 0;display:flex;flex-direction:column;align-items:center;gap:22px;height:max-content;position:sticky;top:8px;color:var(--tx);font-size:18px}
+main{flex:1;min-width:0;background:var(--panel);border-radius:22px;padding:16px}
+.q{display:flex;gap:12px;align-items:flex-start;margin:22px 4px 8px}
+.q:first-child{margin-top:4px}
+.q h2{margin:0;font-size:16px;font-weight:500;line-height:1.5;flex:1}
+.q h2 small{display:block;color:var(--mut);font-weight:400;font-size:13px;margin-top:4px}
+.cp{flex:none;display:flex;align-items:center;gap:6px;background:var(--btn);color:#fff;border:0;border-radius:18px;padding:8px 14px;font-size:13px;cursor:pointer}
+.cp:hover{background:#0842a0}.cp.ok{background:#146c2e}
+.cell{display:flex;gap:6px}
+.gut{width:48px;flex:none;text-align:center;color:var(--mut);font-size:11px;padding-top:6px}
+.run{width:34px;height:34px;border-radius:50%;background:#e3e3e3;color:#131314;display:flex;align-items:center;justify-content:center;margin:6px auto 0;font-size:14px}
+.code{flex:1;min-width:0;background:var(--cell);border:1px solid var(--line);border-radius:6px;overflow:auto}
+pre{margin:0;padding:12px 16px;font:13.5px/1.7 "Roboto Mono",Consolas,monospace;color:#e8eaed;tab-size:4}
+.k{color:#f28b82}.s{color:#fdd663}.n{color:#81c995}.c{color:#9aa0a6;font-style:italic}.f{color:#8ab4f8}
+.out{margin:4px 0 0 54px;color:var(--mut);font-size:13px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(80px);background:#e3e3e3;color:#131314;padding:10px 20px;border-radius:8px;font-size:14px;transition:.25s;z-index:9}
+#toast.on{transform:translateX(-50%) translateY(0)}
+@media(max-width:640px){aside{display:none}.gut{display:none}.out{margin-left:4px}.q{flex-direction:column}.cp{align-self:flex-start}}
+</style></head><body>
+<header><span class="logo">CO</span><div><div class="ttl">Practicals.ipynb ☆</div><div class="menu"><span>File</span><span>Edit</span><span>View</span><span>Insert</span><span>Runtime</span><span>Tools</span><span>Help</span></div></div><div class="sp"></div><div class="share">Share</div></header>
+<div class="tb"><span>🔍 Commands</span><span>+ Code</span><span>+ Text</span><span class="m">|</span><span>▷ Run all</span></div>
+<div class="wrap"><aside><span>☰</span><span>⌕</span><span>&lt;&gt;</span><span>⚙</span><span>🗀</span></aside><main id="m"></main></div>
+<div id="toast">Code copied!</div>
+<script>
+const P=[
+{q:"Q1. Simulate a digital communication system (Tx, AWGN Channel, Rx) with a moving-average filter.",
+c:`# AIM: Simulate Tx -> Channel -> Rx and recover a noisy sine wave using a moving-average filter.
+# THEORY:
+#  Tx  : generates a clean sine wave  x(t) = sin(2*pi*f*t)
+#  Channel: AWGN adds random Gaussian noise  y(t) = x(t) + n(t),  n ~ N(0, sigma^2)
+#  Rx  : sliding-window moving average  r[n] = (1/M) * sum(y[n-k]),  smooths out noise
+import numpy as np
+import matplotlib.pyplot as plt
+
+t = np.linspace(0, 1, 500)                              # time axis (1 s, 500 samples)
+tx = np.sin(2*np.pi*5*t)                                # I. clean 5 Hz sine wave
+noise = tx + np.random.normal(0, 0.3, len(t))           # II. add AWGN (mean 0, std 0.3)
+rx = np.convolve(noise, np.ones(10)/10, mode='same')    # III. moving average, window = 10
+
+# IV. three separate graphs
+for s, title in [(tx, 'Transmitted'), (noise, 'Noisy Channel'), (rx, 'Recovered')]:
+    plt.figure()
+    plt.plot(t, s)
+    plt.title(title)
+    plt.xlabel('Time (s)'); plt.ylabel('Amplitude')
+    plt.grid()
+    plt.show()
+
+# OBSERVATION: Tx = clean 5 Hz sine; Channel = irregular/noisy; Rx = smoother signal.
+# CONCLUSION: The moving-average filter reduced noise and recovered a smoother signal.`},
+{q:"Q2. Simulate cellular frequency reuse: compute co-channel reuse distance and plot hexagonal cells.",
+c:`# AIM: Simulate cellular frequency reuse and calculate the co-channel reuse distance.
+# THEORY: Cluster size N = i^2 + i*j + j^2  (e.g. 1, 3, 4, 7, 12 ...)
+#         Co-channel reuse distance   D = R * sqrt(3N)
+#         Reuse ratio                 q = D / R = sqrt(3N)
+# Larger N -> larger D -> less co-channel interference but fewer channels per cell.
+import numpy as np
+import matplotlib.pyplot as plt
+
+N, R = 7, 1                   # I. cluster size and cell radius (change as given in question)
+D = R * np.sqrt(3 * N)        # II. minimum co-channel reuse distance
+
+# III. plot two hexagonal co-channel cells (both use channel set 'A')
+for x, y in [(0, 0), (D, 0)]:
+    a = np.arange(0, 7) * np.pi / 3
+    plt.fill(x + R * np.cos(a), y + R * np.sin(a), alpha=0.3)
+    plt.text(x, y, 'A', ha='center')
+
+plt.plot([0, D], [0, 0], 'r--')            # line joining co-channel cell centres
+plt.text(D / 2, 0.2, f'D={D:.2f}')
+plt.axis('equal')
+plt.title('Frequency Reuse')
+plt.grid()
+plt.show()
+
+print(f"Frequency reuse distance (D) = {D:.2f}")   # N=7, R=1 -> D = 4.58
+# CONCLUSION: D = R*sqrt(3N) was calculated and the co-channel cells were plotted.`},
+{q:"Q3. Wi-Fi analyzer (WiFiman): 2.4 GHz scan, compare Channels 1, 6, 11, bar graph and channel recommendation.",
+c:`# AIM: Analyse nearby 2.4 GHz Wi-Fi networks and recommend the best channel.
+# THEORY:
+#  - 2.4 GHz channels are 5 MHz apart but each 20 MHz-wide signal spans ~4-5 channels.
+#  - Only channels 1, 6 and 11 are non-overlapping.
+#  - Co-channel networks (same channel) share airtime; overlapping networks
+#    (e.g. 2,3,4,5 vs 1) cause adjacent-channel interference. More networks and a
+#    stronger RSSI (closer to 0 dBm, e.g. -45 > -80) means more interference.
+# PROCEDURE: Scan with WiFiman and replace the sample values below with YOUR readings.
+import matplotlib.pyplot as plt
+
+# I. (SSID, Channel, RSSI dBm, Width MHz)  <- sample data, replace with lab readings
+nets = [("LAB_WIFI", 6, -45, 20), ("Net_A", 1, -60, 20), ("Net_B", 6, -70, 20),
+        ("Net_C", 11, -75, 20), ("Net_D", 1, -82, 20), ("Net_E", 3, -68, 20)]
+
+print("SSID\\tCh\\tRSSI\\tWidth")
+for n in nets: print(*n, sep="\\t")
+
+# II. compare channels 1, 6, 11 (exclude the lab network itself)
+others = [n for n in nets if n[0] != "LAB_WIFI"]
+count, strongest = {}, {}
+for ch in (1, 6, 11):
+    r = [n[2] for n in others if n[1] == ch]
+    count[ch] = len(r); strongest[ch] = max(r) if r else None
+    print(f"Channel {ch}: networks={count[ch]}, strongest RSSI={strongest[ch]} dBm")
+
+# III. co-channel / overlapping networks with respect to the lab network
+lab = nets[0][1]
+for s, ch, rssi, w in others:
+    kind = "Co-channel" if ch == lab else ("Overlapping" if abs(ch - lab) <= 4 else "Non-overlapping")
+    print(s, ch, kind)
+
+# IV. bar graph
+plt.bar([str(c) for c in count], list(count.values()), color=['tab:blue', 'tab:green', 'tab:orange'])
+plt.xlabel('Channel'); plt.ylabel('Detected networks'); plt.title('Networks on Channels 1, 6, 11')
+plt.show()
+
+# V. recommendation: fewest networks, then weakest competing RSSI
+best = min(count, key=lambda c: (count[c], strongest[c] if strongest[c] else -100))
+print("Recommended channel:", best)
+# JUSTIFICATION: the recommended channel has the fewest networks and the weakest
+# competing signal, so it has least co-channel interference and highest throughput.`},
+{q:"Q4. Cisco Packet Tracer: wireless LAN (router, server, laptop), RTT with ping, Simulation Mode, throughput.",
+c:`# AIM: Configure a wireless LAN in Cisco Packet Tracer and measure RTT and throughput.
+# ---- PART A: PACKET TRACER (GUI) STEPS ----
+# 1. Place a Wireless Router (e.g. WRT300N), a Server-PT and a Laptop-PT.
+# 2. Connect Server -> router LAN port (Copper Straight-Through).
+# 3. Laptop: Physical tab -> power off -> replace wired NIC with WMP300N -> power on.
+# 4. Router GUI tab -> Wireless: SSID = LAB_WLAN, Security = Disabled -> Save.
+# 5. Router GUI -> Setup: IP 192.168.0.1, DHCP enabled.
+# 6. Server: Config -> FastEthernet0 -> static IP 192.168.0.10, mask 255.255.255.0.
+# 7. Laptop: Config -> Wireless0 -> SSID LAB_WLAN, IP = DHCP (e.g. 192.168.0.100).
+# 8. Laptop Command Prompt:
+#       ping 192.168.0.10            (default 32 bytes)  -> note Min / Max / Avg RTT
+#       ping -l 1500 192.168.0.10    (1500 bytes)        -> note Min / Max / Avg RTT
+# 9. Simulation Mode: send a 2000-byte payload (Add Simple PDU or ping -l 2000),
+#    capture and note the transmission time and arrival time of the packet.
+# 10. Repeat the throughput measurement 3 times.
+#
+# ---- PART B: CALCULATIONS ----
+# Total packet size = payload + headers (ICMP 8 B + IP 20 B + Ethernet 18 B)
+# RTT interval      = arrival time - transmission time
+# Throughput (bps)  = (total packet size in bits) / RTT   ;   kbps = bps / 1000
+payload = 2000
+total = payload + 8 + 20 + 18                 # bytes
+trials = [(0.000, 0.012), (0.000, 0.011), (0.000, 0.013)]   # (t_tx, t_rx) sec: replace with YOUR values
+
+for i, (tx, rx) in enumerate(trials, 1):
+    rtt = rx - tx
+    bps = total * 8 / rtt
+    print(f"Trial {i}: size={total} B, RTT={rtt*1000:.1f} ms, "
+          f"throughput={bps:.0f} bps = {bps/1000:.2f} kbps")
+
+# COMMENT: Larger packets take longer to transmit (transmission delay = L/R) and may be
+# fragmented (MTU 1500 B), so latency/RTT increases with packet size, while throughput
+# improves because fixed header overhead is shared by more payload bytes.`},
+{q:"Q5. Free-space path loss: 700 MHz and 900 MHz (1-50 m); 400 m and 800 m (700-900 MHz).",
+c:`# AIM: Calculate and analyse free-space path loss (FSPL) vs distance and frequency.
+# THEORY: FSPL(dB) = 32.44 + 20*log10(d_km) + 20*log10(f_MHz)
+#   d in km, f in MHz. Doubling d or f adds ~6 dB of loss.
+import numpy as np
+import matplotlib.pyplot as plt
+
+def fspl(d_m, f_mhz):
+    return 32.44 + 20*np.log10(d_m/1000) + 20*np.log10(f_mhz)
+
+# I & II. path loss vs distance (1-50 m) at 700 and 900 MHz
+d = np.arange(1, 51)
+for f in [700, 900]:
+    plt.plot(d, fspl(d, f), label=f'{f} MHz')
+plt.title('Path Loss vs Distance')
+plt.xlabel('Distance (m)'); plt.ylabel('Path Loss (dB)')
+plt.legend(); plt.grid(); plt.show()
+
+# III & IV. path loss vs frequency (700-900 MHz) at 400 m and 800 m
+f = np.arange(700, 901)
+for dist in [400, 800]:
+    plt.plot(f, fspl(dist, f), label=f'{dist} m')
+plt.title('Path Loss vs Frequency')
+plt.xlabel('Frequency (MHz)'); plt.ylabel('Path Loss (dB)')
+plt.legend(); plt.grid(); plt.show()
+
+# Sample values: 1 m -> 29.34 dB (700 MHz), 31.52 dB (900 MHz); 50 m -> 63.32 / 65.50 dB
+#                400 m: 81.38 dB @700 MHz, 83.57 dB @900 MHz; 800 m: 87.40 / 89.59 dB
+# V. COMMENT: Path loss rises with distance (log curve) and with frequency. 900 MHz loses
+# ~2.2 dB more than 700 MHz; 800 m loses ~6 dB more than 400 m. Distance has the larger
+# effect; lower frequencies travel farther.`},
+{q:"Q6. Free-space path loss: 1800 MHz and 2100 MHz (1-50 m); 600 m and 1200 m (1800-2100 MHz).",
+c:`# AIM: Calculate and analyse free-space path loss vs distance and frequency.
+# THEORY: FSPL(dB) = 32.44 + 20*log10(d_km) + 20*log10(f_MHz)
+import numpy as np
+import matplotlib.pyplot as plt
+
+def fspl(d_m, f_mhz):
+    return 32.44 + 20*np.log10(d_m/1000) + 20*np.log10(f_mhz)
+
+# I & II. path loss vs distance (1-50 m) at 1800 and 2100 MHz
+d = np.arange(1, 51)
+for f in [1800, 2100]:
+    plt.plot(d, fspl(d, f), label=f'{f} MHz')
+plt.title('Path Loss vs Distance')
+plt.xlabel('Distance (m)'); plt.ylabel('Path Loss (dB)')
+plt.legend(); plt.grid(); plt.show()
+
+# III & IV. path loss vs frequency (1800-2100 MHz) at 600 m and 1200 m
+f = np.arange(1800, 2101)
+for dist in [600, 1200]:
+    plt.plot(f, fspl(dist, f), label=f'{dist} m')
+plt.title('Path Loss vs Frequency')
+plt.xlabel('Frequency (MHz)'); plt.ylabel('Path Loss (dB)')
+plt.legend(); plt.grid(); plt.show()
+
+# Sample values: 1 m -> 37.55 dB (1800 MHz), 38.88 dB (2100 MHz); 50 m -> 71.52 / 72.86 dB
+#                600 m: 93.11 dB @1800 MHz, 94.45 dB @2100 MHz; 1200 m: 99.13 / 100.47 dB
+# V. COMMENT: Path loss increases with both distance and frequency. 2100 MHz is ~1.3 dB
+# worse than 1800 MHz, and doubling distance (600 -> 1200 m) adds ~6 dB.`},
+{q:"Q7. Smartphone network diagnostics: network type, RSRP, RSRQ, SINR; averages and classification.",
+c:`# AIM: Record RSRP, RSRQ, SINR (3 readings, 1 min apart), average them and classify the signal.
+# THEORY:
+#  RSRP (dBm): Reference Signal Received Power - signal strength of the serving cell.
+#              Used for cell selection, handover and coverage estimation.
+#  RSRQ (dB) : Reference Signal Received Quality = N*RSRP/RSSI - quality, includes
+#              interference and load.
+#  SINR (dB) : Signal to Interference plus Noise Ratio - decides modulation (MCS),
+#              hence achievable data rate.
+# Classification: RSRP >= -80 Excellent | -80..-90 Good | -90..-100 Fair | < -100 Poor
+#                 RSRQ >= -10 Good | -10..-15 Fair | < -15 Poor
+#                 SINR >= 20 Excellent | 13..20 Good | 0..13 Fair | < 0 Poor
+net = "4G (LTE)"                        # note from the app
+rows = [("Initial", -85, -9, 18),       # (time, RSRP, RSRQ, SINR) - replace with YOUR readings
+        ("After 1 min", -88, -10, 16),
+        ("After 2 min", -86, -9, 17)]
+
+def rsrp_class(x):
+    return "Excellent" if x >= -80 else "Good" if x >= -90 else "Fair" if x >= -100 else "Poor"
+
+print("Network:", net)
+print(f"{'Time':<12}{'RSRP':>6}{'RSRQ':>6}{'SINR':>6}  Quality")
+for t, a, b, c in rows:
+    print(f"{t:<12}{a:>6}{b:>6}{c:>6}  {rsrp_class(a)}")
+
+n = len(rows)
+avg = [sum(r[i] for r in rows) / n for i in (1, 2, 3)]
+print(f"Average RSRP={avg[0]:.1f} dBm, RSRQ={avg[1]:.1f} dB, SINR={avg[2]:.1f} dB -> {rsrp_class(avg[0])}")
+# COMMENT: Good RSRP + acceptable RSRQ + high SINR means strong, clean signal and high data rate.`},
+{q:"Q8. Packet Tracer: WLAN MWC_LAB with WPA2-Personal (AES) and MAC address filtering.",
+c:`# AIM: Configure a secure wireless LAN (SSID MWC_LAB) in Cisco Packet Tracer.
+# ---- STAGE 1: OPEN NETWORK ----
+# 1. Place a Wireless Router and 3 laptops (swap NIC to WMP300N on each).
+# 2. Router GUI -> Wireless: SSID = MWC_LAB, Security = Disabled -> Save.
+# 3. Laptops: Config -> Wireless0 -> SSID MWC_LAB, DHCP.  Verify: ping router / other laptop.
+# ---- STAGE 2: WPA2-PERSONAL ----
+# 4. Router GUI -> Wireless Security: WPA2-Personal, Encryption = AES,
+#    Passphrase = MWC@12345 -> Save.
+# 5. Laptop 1: WPA2-PSK, passphrase MWC@12345 -> connects, ping succeeds.
+# 6. Laptop 3: WPA2-PSK, wrong passphrase -> association rejected, ping fails.
+# ---- STAGE 3: MAC FILTERING ----
+# 7. Note each laptop's MAC (Config -> Wireless0 -> MAC Address).
+# 8. Router GUI -> Wireless -> Wireless MAC Filter: Enabled, "Permit PCs listed below",
+#    add Laptop 1's MAC -> Save.
+# 9. Laptop 1 (permitted) connects; Laptop 2 (not listed) is rejected even with the right password.
+#
+# EXPLANATION:
+#  WPA2 (AES-CCMP): authenticates users with a pre-shared key and encrypts all traffic,
+#   so unauthorised users cannot join and data cannot be read by eavesdroppers.
+#  MAC filtering: allows only listed device hardware addresses - a second layer of access
+#   control (can be spoofed, so use together with WPA2).
+table = [
+ ("Stage 1: Open",  "Laptop 1", "None",           "N/A", "Connected", "Yes"),
+ ("Stage 1: Open",  "Laptop 2", "None",           "N/A", "Connected", "Yes"),
+ ("Stage 2: WPA2",  "Laptop 1", "MWC@12345",      "N/A", "Connected", "Yes"),
+ ("Stage 2: WPA2",  "Laptop 3", "WRONG@PASSWORD", "N/A", "Rejected",  "No"),
+ ("Stage 3: MAC",   "Laptop 1", "MWC@12345",      "Yes", "Connected", "Yes"),
+ ("Stage 3: MAC",   "Laptop 2", "MWC@12345",      "No",  "Rejected",  "No")]
+print(f"{'Stage':<15}{'Device':<10}{'Password':<16}{'MAC OK':<8}{'Status':<11}Ping")
+for r in table:
+    print(f"{r[0]:<15}{r[1]:<10}{r[2]:<16}{r[3]:<8}{r[4]:<11}{r[5]}")`}
+];
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const hl=s=>esc(s).replace(/(#.*)|((?:f?)'[^'\n]*'|"[^"\n]*")|\b(import|as|for|in|def|return|if|else|from)\b|\b(print|range|len|min|max|sum)(?=\()|\b(\d+\.?\d*)\b/g,
+ (m,c,st,k,f,n)=>c?`<span class="c">${m}</span>`:st?`<span class="s">${m}</span>`:k?`<span class="k">${m}</span>`:f?`<span class="f">${m}</span>`:`<span class="n">${m}</span>`);
+const M=document.getElementById('m'),T=document.getElementById('toast');
+P.forEach((p,i)=>{
+ const w=document.createElement('div');
+ w.innerHTML=`<div class="q"><h2>${esc(p.q)}</h2><button class="cp" data-i="${i}">⧉ Copy code</button></div>
+ <div class="cell"><div class="gut">[${i+1}]<div class="run">▶</div></div><div class="code"><pre>${hl(p.c)}</pre></div></div>`;
+ M.appendChild(w);
+});
+function toast(){T.classList.add('on');setTimeout(()=>T.classList.remove('on'),1600)}
+M.addEventListener('click',async e=>{
+ const b=e.target.closest('.cp');if(!b)return;
+ const t=P[b.dataset.i].c;
+ try{await navigator.clipboard.writeText(t)}catch(_){
+  const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();
+  try{document.execCommand('copy')}catch(_){}a.remove();
+ }
+ b.classList.add('ok');b.textContent='✓ Copied';toast();
+ setTimeout(()=>{b.classList.remove('ok');b.textContent='⧉ Copy code'},1600);
+});
+</script></body></html>
